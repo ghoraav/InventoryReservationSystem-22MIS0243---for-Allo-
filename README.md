@@ -227,7 +227,7 @@ Confirms reservation after successful payment.
 ### Cancel Reservation
 
 ```http
-POST /api/reservations/:id/cancel
+POST /api/reservations/:id/release
 ```
 
 Cancels reservation and releases inventory.
