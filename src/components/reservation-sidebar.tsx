@@ -1,5 +1,5 @@
 "use client";
-
+import { toast } from "sonner";
 import {
   useReservations,
 } from "@/hooks/use-reservations";
@@ -32,7 +32,9 @@ export default function ReservationSidebar() {
 
       removeReservation(id);
 
-      alert("Reservation confirmed");
+      toast.success(
+  "Reservation confirmed"
+);
     } catch (err) {
       console.error(err);
     }
@@ -47,9 +49,15 @@ export default function ReservationSidebar() {
       removeReservation(id);
       await refreshProducts();
 
-      alert("Reservation released");
+      toast.success(
+  "Reservation released"
+);
     } catch (err) {
-      console.error(err);
+      toast.error(
+  err instanceof Error
+    ? err.message
+    : "Something went wrong"
+);
     }
   }
 

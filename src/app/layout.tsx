@@ -4,6 +4,7 @@ import "./globals.css";
 import {
   ReservationProvider,
 } from "@/hooks/use-reservations";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body><ReservationProvider>{children}</ReservationProvider></body>
+      <body><ReservationProvider>{children}</ReservationProvider><Toaster richColors /></body>
     </html>
   );
 }
