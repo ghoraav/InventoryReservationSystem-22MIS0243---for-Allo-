@@ -28,7 +28,7 @@ export async function GET(req: Request) {
           warehouseId: reservation.warehouseId,
         },
         data: {
-          reserved: {
+          reservedStock: {
             decrement: reservation.quantity,
           },
         },
