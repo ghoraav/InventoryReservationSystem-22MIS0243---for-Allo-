@@ -1,9 +1,25 @@
 export interface Inventory {
+  id: string;
+
+  productId: string;
+
   warehouseId: string;
-  warehouseName: string;
+
   totalStock: number;
+
   reservedStock: number;
-  availableStock: number;
+
+  createdAt: string;
+
+  updatedAt: string;
+
+  warehouse: {
+    id: string;
+    name: string;
+    location: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface Product {
