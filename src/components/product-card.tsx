@@ -111,7 +111,15 @@ export default function ProductCard({
           quantity,
         });
 
-      addReservation(created);
+      addReservation({
+  ...created,
+
+  productName:
+    product.name,
+
+  warehouseName:
+    inventory.warehouseName,
+});
 
       await refreshProducts();
 

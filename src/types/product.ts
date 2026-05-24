@@ -15,9 +15,22 @@ export interface Product {
 
 export interface Reservation {
   id: string;
+
   productId: string;
+
+  productName: string;
+
   warehouseId: string;
+
+  warehouseName: string;
+
   quantity: number;
+
   status: string;
+
   expiresAt: string;
+
+  createdAt: string;
+
+  updatedAt: string;
 }

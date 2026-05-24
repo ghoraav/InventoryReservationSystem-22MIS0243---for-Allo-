@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   ReactNode,
 } from "react";
@@ -38,6 +39,35 @@ export function ReservationProvider({
   const [reservations, setReservations] =
     useState<Reservation[]>([]);
 
+  useEffect(() => {
+    const saved =
+      localStorage.getItem(
+        "reservations"
+      );
+
+    if (saved) {
+      try {
+        const parsed =
+          JSON.parse(saved);
+
+        if (Array.isArray(parsed)) {
+          setReservations(parsed);
+        }
+      } catch {
+        localStorage.removeItem(
+          "reservations"
+        );
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "reservations",
+      JSON.stringify(reservations)
+    );
+  }, [reservations]);
+
   function addReservation(
     reservation: Reservation
   ) {
@@ -47,9 +77,14 @@ export function ReservationProvider({
     ]);
   }
 
-  function removeReservation(id: string) {
+  function removeReservation(
+    id: string
+  ) {
     setReservations((prev) =>
-      prev.filter((r) => r.id !== id)
+      prev.filter(
+        (reservation) =>
+          reservation.id !== id
+      )
     );
   }
 

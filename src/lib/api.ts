@@ -3,86 +3,115 @@ import {
   Reservation,
 } from "@/types/product";
 
-export async function fetchProducts(): Promise<Product[]> {
-  const res = await fetch(
-    "http://localhost:3000/api/products",
+const API_BASE =
+  "/api";
+
+function generateIdempotencyKey() {
+  return crypto.randomUUID();
+}
+
+export async function getProducts(): Promise<
+  Product[]
+> {
+  const response = await fetch(
+    `${API_BASE}/products`,
     {
       cache: "no-store",
     }
   );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
-  }
-
-  return res.json();
-}
-
-export async function createReservation(data: {
-  productId: string;
-  warehouseId: string;
-  quantity: number;
-}): Promise<Reservation> {
-  const res = await fetch(
-    "/api/reservations",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
-
-  const response = await res.json();
-
-  if (!res.ok) {
+  if (!response.ok) {
     throw new Error(
-      response.error || "Reservation failed"
+      "Failed to fetch products"
     );
   }
 
-  return response;
+  return response.json();
+}
+
+interface CreateReservationPayload {
+  productId: string;
+  warehouseId: string;
+  quantity: number;
+}
+
+export async function createReservation(
+  payload: CreateReservationPayload
+): Promise<Reservation> {
+  const response = await fetch(
+    `${API_BASE}/reservations`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Idempotency-Key":
+          generateIdempotencyKey(),
+      },
+
+      body: JSON.stringify(
+        payload
+      ),
+    }
+  );
+
+  const data =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        "Failed to create reservation"
+    );
+  }
+
+  return data;
 }
 
 export async function confirmReservation(
   id: string
-) {
-  const res = await fetch(
-    `/api/reservations/${id}/confirm`,
+): Promise<Reservation> {
+  const response = await fetch(
+    `${API_BASE}/reservations/${id}/confirm`,
     {
       method: "POST",
     }
   );
 
-  const response = await res.json();
+  const data =
+    await response.json();
 
-  if (!res.ok) {
+  if (!response.ok) {
     throw new Error(
-      response.error || "Confirm failed"
+      data.error ||
+        "Failed to confirm reservation"
     );
   }
 
-  return response;
+  return data;
 }
 
 export async function releaseReservation(
   id: string
-) {
-  const res = await fetch(
-    `/api/reservations/${id}/release`,
+): Promise<Reservation> {
+  const response = await fetch(
+    `${API_BASE}/reservations/${id}/release`,
     {
       method: "POST",
     }
   );
 
-  const response = await res.json();
+  const data =
+    await response.json();
 
-  if (!res.ok) {
+  if (!response.ok) {
     throw new Error(
-      response.error || "Release failed"
+      data.error ||
+        "Failed to release reservation"
     );
   }
 
-  return response;
+  return data;
 }
