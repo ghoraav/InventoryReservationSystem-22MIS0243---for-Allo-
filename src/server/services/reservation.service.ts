@@ -187,3 +187,62 @@ export async function releaseReservation(
     });
   });
 }
+
+//auto release reservation
+export async function releaseExpiredReservations() {
+  const expiredReservations =
+    await prisma.reservation.findMany({
+      where: {
+        status: ReservationStatus.PENDING,
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+
+  for (const reservation of expiredReservations) {
+    await prisma.$transaction(async (tx) => {
+      const inventoryRows = await tx.$queryRaw<
+        {
+          id: string;
+        }[]
+      >`
+        SELECT id
+        FROM "Inventory"
+        WHERE "productId" = ${reservation.productId}
+        AND "warehouseId" = ${reservation.warehouseId}
+        FOR UPDATE
+      `;
+
+      const inventory = inventoryRows[0];
+
+      if (!inventory) {
+        return;
+      }
+
+      await tx.inventory.update({
+        where: {
+          id: inventory.id,
+        },
+        data: {
+          reservedStock: {
+            decrement: reservation.quantity,
+          },
+        },
+      });
+
+      await tx.reservation.update({
+        where: {
+          id: reservation.id,
+        },
+        data: {
+          status: ReservationStatus.RELEASED,
+        },
+      });
+    });
+  }
+
+  return {
+    releasedCount: expiredReservations.length,
+  };
+}
