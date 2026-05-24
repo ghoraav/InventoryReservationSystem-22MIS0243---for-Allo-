@@ -2,18 +2,13 @@
 
 import { useState } from "react";
 
-import ProductCard
-  from "@/components/product-card";
+import ProductCard from "@/components/product-card";
 
-import ReservationSidebar
-  from "@/components/reservation-sidebar";
+import ReservationSidebar from "@/components/reservation-sidebar";
 
-import ProductSearch
-  from "@/components/product-search";
+import ProductSearch from "@/components/product-search";
 
-import {
-  Product,
-} from "@/types/product";
+import { Product } from "@/types/product";
 
 import {
   ProductsProvider,
@@ -49,14 +44,23 @@ function HomeContent() {
       const hasAvailableStock =
         product.inventories.some(
           (inventory) =>
-            inventory.availableStock > 0
+            inventory.totalStock -
+              inventory.reservedStock >
+            0
         );
 
       const hasLowStock =
         product.inventories.some(
-          (inventory) =>
-            inventory.availableStock > 0 &&
-            inventory.availableStock <= 5
+          (inventory) => {
+            const availableStock =
+              inventory.totalStock -
+              inventory.reservedStock;
+
+            return (
+              availableStock > 0 &&
+              availableStock <= 5
+            );
+          }
         );
 
       if (

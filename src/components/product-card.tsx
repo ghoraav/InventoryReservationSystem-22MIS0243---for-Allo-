@@ -93,9 +93,12 @@ export default function ProductCard({
         return;
       }
 
+      const availableStock =
+        inventory.totalStock -
+        inventory.reservedStock;
+
       if (
-        quantity >
-        inventory.availableStock
+        quantity > availableStock
       ) {
         setError(
           "Requested quantity exceeds available stock"
@@ -112,14 +115,14 @@ export default function ProductCard({
         });
 
       addReservation({
-  ...created,
+        ...created,
 
-  productName:
-    product.name,
+        productName:
+          product.name,
 
-  warehouseName:
-    inventory.warehouseName,
-});
+        warehouseName:
+          inventory.warehouse.name,
+      });
 
       await refreshProducts();
 
@@ -156,6 +159,10 @@ export default function ProductCard({
                 inventory.warehouseId
               );
 
+            const availableStock =
+              inventory.totalStock -
+              inventory.reservedStock;
+
             return (
               <div
                 key={
@@ -167,14 +174,15 @@ export default function ProductCard({
                   <div>
                     <p className="font-medium">
                       {
-                        inventory.warehouseName
+                        inventory.warehouse
+                          .name
                       }
                     </p>
 
                     <p className="text-sm text-gray-500">
                       Available Stock:{" "}
                       {
-                        inventory.availableStock
+                        availableStock
                       }
                     </p>
                   </div>
@@ -185,7 +193,7 @@ export default function ProductCard({
                     type="number"
                     min={1}
                     max={
-                      inventory.availableStock
+                      availableStock
                     }
                     value={quantity}
                     onChange={(e) =>
@@ -207,11 +215,11 @@ export default function ProductCard({
                     }
                     disabled={
                       loading ||
-                      inventory.availableStock <=
+                      availableStock <=
                         0 ||
                       quantity <= 0 ||
                       quantity >
-                        inventory.availableStock
+                        availableStock
                     }
                     className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
                   >

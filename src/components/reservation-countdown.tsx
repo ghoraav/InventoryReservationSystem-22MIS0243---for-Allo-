@@ -10,7 +10,7 @@ import {
 } from "@/lib/time";
 
 interface Props {
-  expiresAt: string;
+  expiresAt: string | Date;
   onExpire?: () => void;
 }
 
@@ -18,14 +18,19 @@ export default function ReservationCountdown({
   expiresAt,
   onExpire,
 }: Props) {
+  const expiry =
+    typeof expiresAt === "string"
+      ? expiresAt
+      : expiresAt.toISOString();
+
   const [time, setTime] = useState(
-    getRemainingTime(expiresAt)
+    getRemainingTime(expiry)
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
       const updated =
-        getRemainingTime(expiresAt);
+        getRemainingTime(expiry);
 
       setTime(updated);
 
@@ -37,7 +42,7 @@ export default function ReservationCountdown({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [expiresAt, onExpire]);
+  }, [expiry, onExpire]);
 
   return (
     <p
