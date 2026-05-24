@@ -4,6 +4,9 @@ import {
   useReservations,
 } from "@/hooks/use-reservations";
 
+import ReservationCountdown
+  from "@/components/reservation-countdown";
+
 import {
   confirmReservation,
   releaseReservation,
@@ -68,13 +71,14 @@ export default function ReservationSidebar() {
             Quantity: {reservation.quantity}
           </p>
 
-          <p className="text-sm">
-            Expires:
-            {" "}
-            {new Date(
-              reservation.expiresAt
-            ).toLocaleTimeString()}
-          </p>
+          <ReservationCountdown
+            expiresAt={reservation.expiresAt}
+            onExpire={() =>
+              removeReservation(
+                reservation.id
+              )
+            }
+          />
 
           <div className="flex gap-2">
             <button
