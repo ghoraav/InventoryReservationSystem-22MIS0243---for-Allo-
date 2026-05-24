@@ -31,28 +31,94 @@ export default function ProductCard({
   const [error, setError] =
     useState<string | null>(null);
 
+  const [quantities, setQuantities] =
+    useState<
+      Record<string, number>
+    >({});
+
   const { addReservation } =
     useReservations();
 
   const { refreshProducts } =
     useProducts();
 
+  function getQuantity(
+    warehouseId: string
+  ) {
+    return (
+      quantities[warehouseId] || 1
+    );
+  }
+
+  function updateQuantity(
+    warehouseId: string,
+    value: number
+  ) {
+    setQuantities((prev) => ({
+      ...prev,
+      [warehouseId]: value,
+    }));
+  }
+
   async function handleReserve(
     warehouseId: string
   ) {
+    const quantity =
+      getQuantity(warehouseId);
+
     try {
       setLoading(true);
       setError(null);
+
+      if (quantity <= 0) {
+        setError(
+          "Quantity must be greater than 0"
+        );
+
+        return;
+      }
+
+      const inventory =
+        product.inventories.find(
+          (i) =>
+            i.warehouseId ===
+            warehouseId
+        );
+
+      if (!inventory) {
+        setError(
+          "Inventory not found"
+        );
+
+        return;
+      }
+
+      if (
+        quantity >
+        inventory.availableStock
+      ) {
+        setError(
+          "Requested quantity exceeds available stock"
+        );
+
+        return;
+      }
 
       const created =
         await createReservation({
           productId: product.id,
           warehouseId,
-          quantity: 1,
+          quantity,
         });
 
       addReservation(created);
+
       await refreshProducts();
+
+      updateQuantity(
+        warehouseId,
+        1
+      );
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -76,45 +142,79 @@ export default function ProductCard({
 
       <div className="space-y-2">
         {product.inventories.map(
-          (inventory) => (
-            <div
-              key={inventory.warehouseId}
-              className="border rounded p-3 flex items-center justify-between"
-            >
-              <div>
-                <p className="font-medium">
-                  {
-                    inventory.warehouseName
-                  }
-                </p>
+          (inventory) => {
+            const quantity =
+              getQuantity(
+                inventory.warehouseId
+              );
 
-                <p className="text-sm text-gray-500">
-                  Available Stock:{" "}
-                  {
-                    inventory.availableStock
-                  }
-                </p>
-              </div>
-
-              <button
-                onClick={() =>
-                  handleReserve(
-                    inventory.warehouseId
-                  )
+            return (
+              <div
+                key={
+                  inventory.warehouseId
                 }
-                disabled={
-                  loading ||
-                  inventory.availableStock <= 0
-                }
-                className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+                className="border rounded p-3 space-y-3"
               >
-                Reserve
-              </button>
-            </div>
-          )
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">
+                      {
+                        inventory.warehouseName
+                      }
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Available Stock:{" "}
+                      {
+                        inventory.availableStock
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    max={
+                      inventory.availableStock
+                    }
+                    value={quantity}
+                    onChange={(e) =>
+                      updateQuantity(
+                        inventory.warehouseId,
+                        Number(
+                          e.target.value
+                        )
+                      )
+                    }
+                    className="border rounded px-3 py-2 w-24"
+                  />
+
+                  <button
+                    onClick={() =>
+                      handleReserve(
+                        inventory.warehouseId
+                      )
+                    }
+                    disabled={
+                      loading ||
+                      inventory.availableStock <=
+                        0 ||
+                      quantity <= 0 ||
+                      quantity >
+                        inventory.availableStock
+                    }
+                    className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+                  >
+                    Reserve
+                  </button>
+                </div>
+              </div>
+            );
+          }
         )}
       </div>
-
 
       {error && (
         <p className="text-red-500 text-sm">
