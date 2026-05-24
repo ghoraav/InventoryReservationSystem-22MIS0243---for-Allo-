@@ -121,7 +121,7 @@ export default function ProductCard({
           product.name,
 
         warehouseName:
-          inventory.warehouse.name,
+          inventory.warehouseName,
       });
 
       await refreshProducts();
@@ -174,8 +174,7 @@ export default function ProductCard({
                   <div>
                     <p className="font-medium">
                       {
-                        inventory.warehouse
-                          .name
+                        inventory.warehouseName
                       }
                     </p>
 

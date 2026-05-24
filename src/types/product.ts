@@ -1,31 +1,22 @@
 export interface Inventory {
-  id: string;
-
-  productId: string;
-
   warehouseId: string;
+
+  warehouseName: string;
 
   totalStock: number;
 
   reservedStock: number;
 
-  createdAt: Date;
-
-  updatedAt: Date;
-
-  warehouse: {
-    id: string;
-    name: string;
-    location: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+  availableStock: number;
 }
 
 export interface Product {
   id: string;
+
   name: string;
+
   description: string | null;
+
   inventories: Inventory[];
 }
 
