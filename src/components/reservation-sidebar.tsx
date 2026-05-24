@@ -12,11 +12,17 @@ import {
   releaseReservation,
 } from "@/lib/api";
 
+import {
+  useProducts,
+} from "@/hooks/use-products";
+
 export default function ReservationSidebar() {
   const {
     reservations,
     removeReservation,
   } = useReservations();
+  const { refreshProducts } =
+  useProducts();
 
   async function handleConfirm(
     id: string
@@ -39,6 +45,7 @@ export default function ReservationSidebar() {
       await releaseReservation(id);
 
       removeReservation(id);
+      await refreshProducts();
 
       alert("Reservation released");
     } catch (err) {

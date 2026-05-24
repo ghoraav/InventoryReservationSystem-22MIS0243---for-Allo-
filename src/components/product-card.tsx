@@ -14,6 +14,10 @@ import {
   useReservations,
 } from "@/hooks/use-reservations";
 
+import {
+  useProducts,
+} from "@/hooks/use-products";
+
 interface Props {
   product: Product;
 }
@@ -30,6 +34,9 @@ export default function ProductCard({
   const { addReservation } =
     useReservations();
 
+  const { refreshProducts } =
+    useProducts();
+
   async function handleReserve(
     warehouseId: string
   ) {
@@ -45,6 +52,7 @@ export default function ProductCard({
         });
 
       addReservation(created);
+      await refreshProducts();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
