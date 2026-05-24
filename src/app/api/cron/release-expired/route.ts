@@ -1,24 +1,51 @@
-import {
-  releaseExpiredReservations,
-} from "@/server/services/reservation.service";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-import {
-  success,
-  error,
-} from "@/lib/api-response";
+export async function GET(req: Request) {
+  const authHeader = req.headers.get("authorization");
 
-export async function GET() {
-  try {
-    const result =
-      await releaseExpiredReservations();
-
-    return success(result);
-  } catch (err) {
-    console.error(err);
-
-    return error(
-      "Failed to release expired reservations",
-      500
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
     );
   }
+
+  const expiredReservations = await prisma.reservation.findMany({
+    where: {
+      status: "PENDING",
+      expiresAt: {
+        lte: new Date(),
+      },
+    },
+  });
+
+  for (const reservation of expiredReservations) {
+    await prisma.$transaction(async (tx) => {
+      await tx.inventory.updateMany({
+        where: {
+          productId: reservation.productId,
+          warehouseId: reservation.warehouseId,
+        },
+        data: {
+          reserved: {
+            decrement: reservation.quantity,
+          },
+        },
+      });
+
+      await tx.reservation.update({
+        where: {
+          id: reservation.id,
+        },
+        data: {
+          status: "RELEASED",
+        },
+      });
+    });
+  }
+
+  return NextResponse.json({
+    released: expiredReservations.length,
+  });
 }
