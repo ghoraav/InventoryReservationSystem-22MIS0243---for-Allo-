@@ -4,14 +4,15 @@ import { useState } from "react";
 
 import {
   Product,
-  Reservation,
 } from "@/types/product";
 
 import {
   createReservation,
-  confirmReservation,
-  releaseReservation,
 } from "@/lib/api";
+
+import {
+  useReservations,
+} from "@/hooks/use-reservations";
 
 interface Props {
   product: Product;
@@ -26,8 +27,8 @@ export default function ProductCard({
   const [error, setError] =
     useState<string | null>(null);
 
-  const [reservation, setReservation] =
-    useState<Reservation | null>(null);
+  const { addReservation } =
+    useReservations();
 
   async function handleReserve(
     warehouseId: string
@@ -43,51 +44,7 @@ export default function ProductCard({
           quantity: 1,
         });
 
-      setReservation(created);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleConfirm() {
-    if (!reservation) return;
-
-    try {
-      setLoading(true);
-
-      await confirmReservation(
-        reservation.id
-      );
-
-      alert("Purchase confirmed");
-
-      setReservation(null);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleCancel() {
-    if (!reservation) return;
-
-    try {
-      setLoading(true);
-
-      await releaseReservation(
-        reservation.id
-      );
-
-      alert("Reservation released");
-
-      setReservation(null);
+      addReservation(created);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -150,38 +107,6 @@ export default function ProductCard({
         )}
       </div>
 
-      {reservation && (
-        <div className="border rounded p-4 bg-gray-100 space-y-3">
-          <p>
-            Reservation Active
-          </p>
-
-          <p className="text-sm">
-            Expires At:{" "}
-            {new Date(
-              reservation.expiresAt
-            ).toLocaleString()}
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleConfirm}
-              disabled={loading}
-              className="bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Confirm
-            </button>
-
-            <button
-              onClick={handleCancel}
-              disabled={loading}
-              className="bg-red-600 text-white px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {error && (
         <p className="text-red-500 text-sm">

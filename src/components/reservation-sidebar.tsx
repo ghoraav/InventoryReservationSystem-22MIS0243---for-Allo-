@@ -1,0 +1,106 @@
+"use client";
+
+import {
+  useReservations,
+} from "@/hooks/use-reservations";
+
+import {
+  confirmReservation,
+  releaseReservation,
+} from "@/lib/api";
+
+export default function ReservationSidebar() {
+  const {
+    reservations,
+    removeReservation,
+  } = useReservations();
+
+  async function handleConfirm(
+    id: string
+  ) {
+    try {
+      await confirmReservation(id);
+
+      removeReservation(id);
+
+      alert("Reservation confirmed");
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleCancel(
+    id: string
+  ) {
+    try {
+      await releaseReservation(id);
+
+      removeReservation(id);
+
+      alert("Reservation released");
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  return (
+    <aside className="border rounded-lg p-4 space-y-4 h-fit sticky top-8">
+      <h2 className="text-xl font-bold">
+        Active Reservations
+      </h2>
+
+      {reservations.length === 0 && (
+        <p className="text-sm text-gray-500">
+          No active reservations
+        </p>
+      )}
+
+      {reservations.map((reservation) => (
+        <div
+          key={reservation.id}
+          className="border rounded p-3 space-y-2"
+        >
+          <p className="text-sm break-all">
+            {reservation.id}
+          </p>
+
+          <p className="text-sm">
+            Quantity: {reservation.quantity}
+          </p>
+
+          <p className="text-sm">
+            Expires:
+            {" "}
+            {new Date(
+              reservation.expiresAt
+            ).toLocaleTimeString()}
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() =>
+                handleConfirm(
+                  reservation.id
+                )
+              }
+              className="bg-green-600 text-white px-3 py-1 rounded text-sm"
+            >
+              Confirm
+            </button>
+
+            <button
+              onClick={() =>
+                handleCancel(
+                  reservation.id
+                )
+              }
+              className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ))}
+    </aside>
+  );
+}
