@@ -9,16 +9,16 @@ export interface Inventory {
 
   reservedStock: number;
 
-  createdAt: string;
+  createdAt: Date;
 
-  updatedAt: string;
+  updatedAt: Date;
 
   warehouse: {
     id: string;
     name: string;
     location: string | null;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
   };
 }
 
@@ -44,9 +44,9 @@ export interface Reservation {
 
   status: string;
 
-  expiresAt: string;
+  expiresAt: Date;
 
-  createdAt: string;
+  createdAt: Date;
 
-  updatedAt: string;
+  updatedAt: Date;
 }
